@@ -1,0 +1,6 @@
+chromadb
+fastapi
+pandas
+sentence-transformers
+uvicorn[standard]
+python-multipart

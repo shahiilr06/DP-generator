@@ -1,0 +1,52 @@
+# docker-compose.yml — DP RAG Chatbot
+
+services:
+  # ── FastAPI Backend ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .          # project root (contains backend/, src/, dataset/)
+      dockerfile: backend/Dockerfile
+    container_name: dp-rag-backend
+    restart: unless-stopped
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - chroma_data:/app/chroma_db
+      - outputs_data:/app/outputs
+    ports:
+      - "8000:8000"       # direct backend access (optional / for debugging)
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s   # sentence-transformers can take a moment to load
+    networks:
+      - dp-net
+
+  # ── Vite / Nginx Frontend ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dp-rag-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"         # http://localhost:3000 → nginx → backend
+    depends_on:
+      - backend            # start after backend (not waiting for healthy —
+                           # nginx will retry /api proxying until backend ready)
+    networks:
+      - dp-net
+
+# ── Named volumes ────────────────────────────────────────────────────────
+volumes:
+  chroma_data:
+  outputs_data:
+
+# ── Internal bridge network ──────────────────────────────────────────────
+networks:
+  dp-net:
+    driver: bridge

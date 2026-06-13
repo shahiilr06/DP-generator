@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+.env
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Databases & Data
+chroma_db/
+outputs/
+*.sqlite3
+*.pkl
+
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store
+
+# Docker
+.dockerignore
+
+# IDEs
+.vscode/
+.idea/
+dataset/customer_support_data.csv
